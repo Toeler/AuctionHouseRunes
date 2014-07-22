@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Addon Author="Toez" APIVersion="9" Name="AuctionHouseRunes" Description="Display the runes on each item in the Auction House list.">
+    <Script Name="AuctionHouseRunes.lua"/>
+    <Form Name="AuctionHouseRunes.xml"/>
+</Addon>
