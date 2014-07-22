@@ -71,7 +71,7 @@ end
 
 function AuctionHouseRunes:OnRestore(eLevel, tData)
 	if tData ~= nil then
-		--self.settings = mergeTables(self.settings, tData)
+		self.settings = mergeTables(self.settings, tData)
 	end
 end
 
