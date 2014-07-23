@@ -78,7 +78,11 @@ function AuctionHouseRunes:OnRestore(eLevel, tData)
 	end
 end
 
-function AuctionHouseRunes:OnSlashCommand(sCommand, sParam)	
+function AuctionHouseRunes:OnSlashCommand(sCommand, sParam)
+	local function print(sMessage)
+		ChatSystemLib.PostOnChannel(ChatSystemLib.ChatChannel_Command, sMessage, "")
+	end
+	
 	local bValid = false
 	if sParam then
 		if string.sub(sParam, 1, string.len("icon")) == "icon" then
@@ -86,38 +90,38 @@ function AuctionHouseRunes:OnSlashCommand(sCommand, sParam)
 			if sRest == "on" or sRest == "show" then
 				bValid = true
 				self.settings.bRuneIcons = true
-				Print("[AuctionHouseRunes] Rune icons shown. Please close and reopen the auction house.")
+				print("[AuctionHouseRunes] Rune icons shown. Please close and reopen the auction house.")
 			elseif sRest == "off" or sRest == "hide" then
 				bValid = true
 				self.settings.bRuneIcons = false
-				Print("[AuctionHouseRunes] Rune icons hidden. Please close and reopen the auction house.")
+				print("[AuctionHouseRunes] Rune icons hidden. Please close and reopen the auction house.")
 			end
 		elseif string.sub(sParam, 1, string.len("name")) == "name" then
 			local sRest = string.lower(string.sub(sParam, string.len("name") + 2))
 			if sRest == "on" or sRest == "show" then
 				bValid = true
 				self.settings.bRuneNames = true
-				Print("[AuctionHouseRunes] Rune names shown. Please close and reopen the auction house.")
+				print("[AuctionHouseRunes] Rune names shown. Please close and reopen the auction house.")
 			elseif sRest == "off" or sRest == "hide" then
 				bValid = true
 				self.settings.bRuneNames = false
-				Print("[AuctionHouseRunes] Rune names hidden. Please close and reopen the auction house.")
+				print("[AuctionHouseRunes] Rune names hidden. Please close and reopen the auction house.")
 			end
 		elseif string.sub(sParam, 1, string.len("size")) == "size" then
 			local sRest = string.lower(string.sub(sParam, string.len("name") + 2))
 			if tonumber(sRest) then
 				bValid = true
 				self.settings.nIconSize = tonumber(sRest)
-				Print("[AuctionHouseRunes] Rune icon size set to " .. tostring(self.settings.nIconSize) .. ". Please close and reopen the auction house.")
+				print("[AuctionHouseRunes] Rune icon size set to " .. tostring(self.settings.nIconSize) .. ". Please close and reopen the auction house.")
 			end
 		end
 	end
 	
 	if bValid == false then
-		Print("[AuctionHouseRunes] Usage:")
-		Print("/ahr icon show|hide - shows or hides the rune icons (Default show)")
-		Print("/ahr size XX - sets the rune icon size (Default 34)")
-		Print("/ahr name show|hide - shows or hides the rune names (Default show)")
+		print("[AuctionHouseRunes] Usage:")
+		print("/ahr icon show|hide - shows or hides the rune icons (Default show)")
+		print("/ahr size XX - sets the rune icon size (Default 34)")
+		print("/ahr name show|hide - shows or hides the rune names (Default show)")
 	end
 end
 
