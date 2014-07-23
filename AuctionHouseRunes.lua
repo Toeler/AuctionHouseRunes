@@ -120,7 +120,7 @@ function AuctionHouseRunes:OnSlashCommand(sCommand, sParam)
 	if bValid == false then
 		print("[AuctionHouseRunes] Usage:")
 		print("/ahr icon show|hide - shows or hides the rune icons (Default show)")
-		print("/ahr size XX - sets the rune icon size (Default 34)")
+		print("/ahr size XX - sets the rune icon size (Default 28)")
 		print("/ahr name show|hide - shows or hides the rune names (Default show)")
 	end
 end
