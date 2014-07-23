@@ -26,8 +26,11 @@ local ktDefaultSettings = {
 		nPatch = ktVersion.nPatch
 	},
 	bRuneIcons = true,
+	nIconSize = 28,
 	bRuneNames = true
 }
+
+local ktMinWidth = 40
 
 local ktAuctionHouseAddons = {
 	"MarketplaceAuction"
@@ -71,7 +74,7 @@ end
 
 function AuctionHouseRunes:OnRestore(eLevel, tData)
 	if tData ~= nil then
-		--self.settings = mergeTables(self.settings, tData)
+		self.settings = mergeTables(self.settings, tData)
 	end
 end
 
@@ -100,13 +103,21 @@ function AuctionHouseRunes:OnSlashCommand(sCommand, sParam)
 				self.settings.bRuneNames = false
 				Print("[AuctionHouseRunes] Rune names hidden. Please close and reopen the auction house.")
 			end
+		elseif string.sub(sParam, 1, string.len("size")) == "size" then
+			local sRest = string.lower(string.sub(sParam, string.len("name") + 2))
+			if tonumber(sRest) then
+				bValid = true
+				self.settings.nIconSize = tonumber(sRest)
+				Print("[AuctionHouseRunes] Rune icon size set to " .. tostring(self.settings.nIconSize) .. ". Please close and reopen the auction house.")
+			end
 		end
 	end
 	
 	if bValid == false then
 		Print("[AuctionHouseRunes] Usage:")
-		Print("/ahr icon show|hide - shows or hides the rune icons")
-		Print("/ahr name show|hide - shows or hides the rune names")
+		Print("/ahr icon show|hide - shows or hides the rune icons (Default show)")
+		Print("/ahr size XX - sets the rune icon size (Default 34)")
+		Print("/ahr name show|hide - shows or hides the rune names (Default show)")
 	end
 end
 
@@ -152,31 +163,35 @@ function AuctionHouseRunes:Hook_BuildListItem(luaCaller, aucCurr, wndParent, bBu
 			local wndItemContainers = wndParent:GetChildren()
 			local wndItemContainer = wndItemContainers[#wndItemContainers]
 			local wndRuneContainer = Apollo.LoadForm(self.xmlDoc, "RuneContainer", wndItemContainer, self)
+			local nRuneWidth = (self.settings.nIconSize >= 36) and self.settings.nIconSize or ktMinWidth
 			local width, height = 0, 0
 			
 			for i, tSigil in ipairs(tSigils.arSigils) do
 				local wndRune = Apollo.LoadForm(self.xmlDoc, "Rune", wndRuneContainer, self)
-				wndRune:FindChild("Icon"):SetSprite("Crafting_RunecraftingSprites:sprRunecrafting_" .. tSigil.strName) -- TODO: Works with i18n?
-				wndRune:FindChild("Icon"):Show(self.settings.bRuneIcons)
-				wndRune:FindChild("Name"):SetText(tSigil.strName)
-				wndRune:FindChild("Name"):Show(self.settings.bRuneNames)
+				local wndIcon = wndRune:FindChild("Icon")
+				local wndName = wndRune:FindChild("Name")
+				wndIcon:SetSprite("Crafting_RunecraftingSprites:sprRunecrafting_" .. tSigil.strName) -- TODO: Works with i18n?
+				wndIcon:SetAnchorOffsets(-(self.settings.nIconSize / 2), 0, (self.settings.nIconSize / 2), self.settings.nIconSize)
+				wndIcon:Show(self.settings.bRuneIcons)
+				local tIconOffsets = {wndIcon:GetAnchorOffsets()}
 				
-				width = width + wndRune:GetWidth()
+				local nNameTop = (wndIcon:IsShown() and tIconOffsets[4] or 0)
+				wndName:SetText(tSigil.strName)
+				wndName:SetAnchorOffsets(-(nRuneWidth / 2), nNameTop, (nRuneWidth / 2), nNameTop + 12)
+				wndName:Show(self.settings.bRuneNames)
 				
 				if height == 0 then
-					height	= (self.settings.bRuneIcons and wndRune:FindChild("Icon"):GetHeight() or 0) + (self.settings.bRuneNames and wndRune:FindChild("Name"):GetHeight() or 0) + 2
+					height	= (wndIcon:IsShown() and wndIcon:GetHeight() or 0) + (wndName:IsShown() and wndName:GetHeight() or 0)
 				end
 				
-				if self.settings.bRuneIcons == false and self.settings.bRuneNames == true then
-					local tOffsets = {wndRune:GetAnchorOffsets()}
-					wndRune:SetAnchorOffsets(tOffsets[1], tOffsets[2], tOffsets[3], tOffsets[2] + height)
-				end
+				local tOffsets = {wndRune:GetAnchorOffsets()}
+				wndRune:SetAnchorOffsets(tOffsets[1], tOffsets[2], nRuneWidth, tOffsets[2] + height)
 			end
 			
 			wndRuneContainer:ArrangeChildrenHorz()
 			
 			local tOffsets = {wndRuneContainer:GetAnchorOffsets()}
-			wndRuneContainer:SetAnchorOffsets(tOffsets[3] - width, tOffsets[4] - height, tOffsets[3], tOffsets[4])
+			wndRuneContainer:SetAnchorOffsets(tOffsets[3] - (nRuneWidth * #wndRuneContainer:GetChildren()), tOffsets[4] - height, tOffsets[3], tOffsets[4])
 		end
 	end
 end
