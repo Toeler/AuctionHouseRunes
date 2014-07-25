@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Addon Author="Toez" APIVersion="9" Name="AuctionHouseRunes" Description="Display the runes on each item in the Auction House list.">
+	<!-- Libraries -->
+    <Script Name="GeminiAddon\GeminiAddon.lua"/>
+    <Script Name="GeminiHook\GeminiHook-1.0.lua"/>
+	<Script Name="GeminiLogging\GeminiLogging.lua"/>
     <Script Name="AuctionHouseRunes.lua"/>
     <Form Name="AuctionHouseRunes.xml"/>
 </Addon>
