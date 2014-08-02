@@ -35,6 +35,16 @@ local ktMinWidth = 40
 local ktAuctionHouseAddons = {
 	"MarketplaceAuction"
 }
+
+local ktEvalColors = {
+	[Item.CodeEnumItemQuality.Inferior] 		= ApolloColor.new("ItemQuality_Inferior"),
+	[Item.CodeEnumItemQuality.Average] 			= ApolloColor.new("ItemQuality_Average"),
+	[Item.CodeEnumItemQuality.Good] 			= ApolloColor.new("ItemQuality_Good"),
+	[Item.CodeEnumItemQuality.Excellent] 		= ApolloColor.new("ItemQuality_Excellent"),
+	[Item.CodeEnumItemQuality.Superb] 			= ApolloColor.new("ItemQuality_Superb"),
+	[Item.CodeEnumItemQuality.Legendary] 		= ApolloColor.new("ItemQuality_Legendary"),
+	[Item.CodeEnumItemQuality.Artifact]		 	= ApolloColor.new("ItemQuality_Artifact")
+}
  
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -163,9 +173,10 @@ function AuctionHouseRunes:Hook_BuildListItem(luaCaller, aucCurr, wndParent, bBu
 		local tItem = aucCurr:GetItem()
 		local tSigils = tItem:GetSigils()
 		
+		local wndItemContainers = wndParent:GetChildren()
+		local wndItemContainer = wndItemContainers[#wndItemContainers]
+		
 		if tSigils ~= nil and tSigils.bIsDefined then
-			local wndItemContainers = wndParent:GetChildren()
-			local wndItemContainer = wndItemContainers[#wndItemContainers]
 			local wndRuneContainer = Apollo.LoadForm(self.xmlDoc, "RuneContainer", wndItemContainer, self)
 			local nRuneWidth = (self.settings.nIconSize >= 36) and self.settings.nIconSize or ktMinWidth
 			local width, height = 0, 0
@@ -196,6 +207,18 @@ function AuctionHouseRunes:Hook_BuildListItem(luaCaller, aucCurr, wndParent, bBu
 			
 			local tOffsets = {wndRuneContainer:GetAnchorOffsets()}
 			wndRuneContainer:SetAnchorOffsets(tOffsets[3] - (nRuneWidth * #wndRuneContainer:GetChildren()), tOffsets[4] - height, tOffsets[3], tOffsets[4])
+		end
+		
+		local itemQualityColor = ktEvalColors[tItem:GetItemQuality()]
+		local wndItemIconFrame = Apollo.LoadForm(self.xmlDoc, "ItemIconFrame", wndItemContainer:FindChild("ListIcon"), self)
+		wndItemIconFrame:SetBGColor(itemQualityColor)
+		
+		wndItemContainer:FindChild("ListName"):SetTextColor(itemQualityColor)
+		
+		local tActivateSpell = tItem:GetActivateSpell()
+		local tTradeskillRequirements = tActivateSpell and tActivateSpell:GetTradeskillRequirements()
+		if tTradeskillRequirements and tTradeskillRequirements.bIsKnown then
+			wndItemContainer:FindChild("ListName"):SetText(wndItemContainer:FindChild("ListName"):GetText() .. " (Known)")
 		end
 	end
 end
