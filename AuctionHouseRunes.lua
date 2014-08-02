@@ -229,6 +229,7 @@ function AuctionHouseRunes:Hook_BuildListItem(luaCaller, aucCurr, wndParent, bBu
 		local tTradeskillRequirements = tActivateSpell and tActivateSpell:GetTradeskillRequirements()
 		if tTradeskillRequirements and tTradeskillRequirements.bIsKnown then
 			wndItemContainer:FindChild("ListName"):SetText(wndItemContainer:FindChild("ListName"):GetText() .. " (Known)")
+			wndItemContainer:FindChild("ListName"):SetTextColor("UI_WindowTextRed")
 		end
 	end
 end
