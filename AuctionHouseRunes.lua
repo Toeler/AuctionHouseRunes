@@ -45,6 +45,16 @@ local ktEvalColors = {
 	[Item.CodeEnumItemQuality.Legendary] 		= ApolloColor.new("ItemQuality_Legendary"),
 	[Item.CodeEnumItemQuality.Artifact]		 	= ApolloColor.new("ItemQuality_Artifact")
 }
+
+local ktRuneNames = {
+	[7]		= "Air",
+	[8]		= "Water",
+	[9]		= "Earth",
+	[10]	= "Fire",
+	[11]	= "Logic",
+	[12]	= "Life",
+	[13]	= "Fusion"
+}
  
 -----------------------------------------------------------------------------------------------
 -- Initialization
@@ -185,7 +195,7 @@ function AuctionHouseRunes:Hook_BuildListItem(luaCaller, aucCurr, wndParent, bBu
 				local wndRune = Apollo.LoadForm(self.xmlDoc, "Rune", wndRuneContainer, self)
 				local wndIcon = wndRune:FindChild("Icon")
 				local wndName = wndRune:FindChild("Name")
-				wndIcon:SetSprite("Crafting_RunecraftingSprites:sprRunecrafting_" .. tSigil.strName) -- TODO: Works with i18n?
+				wndIcon:SetSprite("Crafting_RunecraftingSprites:sprRunecrafting_" .. ktRuneNames[tSigil.eType])
 				wndIcon:SetAnchorOffsets(-(self.settings.nIconSize / 2), 0, (self.settings.nIconSize / 2), self.settings.nIconSize)
 				wndIcon:Show(self.settings.bRuneIcons)
 				local tIconOffsets = {wndIcon:GetAnchorOffsets()}
