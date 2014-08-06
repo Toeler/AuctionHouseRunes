@@ -221,8 +221,17 @@ function AuctionHouseRunes:Hook_BuildListItem(luaCaller, aucCurr, wndParent, bBu
 		end
 		
 		local itemQualityColor = ktEvalColors[tItem:GetItemQuality()]
-		local wndItemIconFrame = Apollo.LoadForm(self.xmlDoc, "ItemIconFrame", wndItemContainer:FindChild("ListIcon"), self)
-		wndItemIconFrame:SetBGColor(itemQualityColor)
+		local tItemIconPixie = {
+			bLine = false,
+			bRestart = true,
+			cr = itemQualityColor,
+			strSprite = "BK3:UI_BK3_ItemQualityWhite",
+			loc = {
+				fPoints = {0, 0, 1, 1},
+				nOffsets = {0,0,0,0}
+			}
+		}	
+		wndItemContainer:FindChild("ListIcon"):AddPixie(tItemIconPixie)
 		
 		wndItemContainer:FindChild("ListName"):SetTextColor(itemQualityColor)
 		
