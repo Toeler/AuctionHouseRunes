@@ -17,7 +17,7 @@ local Logger
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-local ktVersion = {nMajor = 1, nMinor = 1, nPatch = 1}
+local ktVersion = {nMajor = 1, nMinor = 1, nPatch = 2}
 
 local ktDefaultSettings = {
 	tVersion = {
