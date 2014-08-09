@@ -175,73 +175,172 @@ function AuctionHouseRunes:InstallAuctionHouseHook()
 	self.oAuctionHouse = oAuctionHouse
 	
 	self:PostHook(self.oAuctionHouse, "BuildListItem", "Hook_BuildListItem")
+	self:PostHook(self.oAuctionHouse, "InitializeSell", "Hook_InitializeSell")
+	self:PostHook(self.oAuctionHouse, "OnSellListItemCheck", "Hook_OnSellListItemCheck")
+	self:PostHook(self.oAuctionHouse, "OnSellListItemUncheck", "Hook_OnSellListItemUncheck")
 	
 	return true
 end
 
 function AuctionHouseRunes:Hook_BuildListItem(luaCaller, aucCurr, wndParent, bBuyTab)
-	if bBuyTab == true then
-		local tItem = aucCurr:GetItem()
-		local tSigils = tItem:GetSigils()
+	local tItem = aucCurr:GetItem()
+	local tSigils = tItem:GetSigils()
+	
+	local wndItemContainers = wndParent:GetChildren()
+	local wndItemContainer = wndItemContainers[#wndItemContainers]
+	
+	if tSigils ~= nil and tSigils.bIsDefined then
+		local wndRuneContainer = Apollo.LoadForm(self.xmlDoc, "RuneContainer", wndItemContainer, self)
+		local nRuneWidth = (self.settings.nIconSize >= 36) and self.settings.nIconSize or ktMinWidth
+		local width, height = 0, 0
 		
-		local wndItemContainers = wndParent:GetChildren()
-		local wndItemContainer = wndItemContainers[#wndItemContainers]
-		
-		if tSigils ~= nil and tSigils.bIsDefined then
-			local wndRuneContainer = Apollo.LoadForm(self.xmlDoc, "RuneContainer", wndItemContainer, self)
-			local nRuneWidth = (self.settings.nIconSize >= 36) and self.settings.nIconSize or ktMinWidth
-			local width, height = 0, 0
+		for i, tSigil in ipairs(tSigils.arSigils) do
+			local wndRune = Apollo.LoadForm(self.xmlDoc, "Rune", wndRuneContainer, self)
+			local wndIcon = wndRune:FindChild("Icon")
+			local wndName = wndRune:FindChild("Name")
+			wndIcon:SetSprite("Crafting_RunecraftingSprites:sprRunecrafting_" .. ktRuneNames[tSigil.eType])
+			wndIcon:SetAnchorOffsets(-(self.settings.nIconSize / 2), 0, (self.settings.nIconSize / 2), self.settings.nIconSize)
+			wndIcon:Show(self.settings.bRuneIcons)
+			local tIconOffsets = {wndIcon:GetAnchorOffsets()}
 			
-			for i, tSigil in ipairs(tSigils.arSigils) do
-				local wndRune = Apollo.LoadForm(self.xmlDoc, "Rune", wndRuneContainer, self)
-				local wndIcon = wndRune:FindChild("Icon")
-				local wndName = wndRune:FindChild("Name")
-				wndIcon:SetSprite("Crafting_RunecraftingSprites:sprRunecrafting_" .. ktRuneNames[tSigil.eType])
-				wndIcon:SetAnchorOffsets(-(self.settings.nIconSize / 2), 0, (self.settings.nIconSize / 2), self.settings.nIconSize)
-				wndIcon:Show(self.settings.bRuneIcons)
-				local tIconOffsets = {wndIcon:GetAnchorOffsets()}
-				
-				local nNameTop = (wndIcon:IsShown() and tIconOffsets[4] or 0)
-				wndName:SetText(tSigil.strName)
-				wndName:SetAnchorOffsets(-(nRuneWidth / 2), nNameTop, (nRuneWidth / 2), nNameTop + 12)
-				wndName:Show(self.settings.bRuneNames)
-				
-				if height == 0 then
-					height	= (wndIcon:IsShown() and wndIcon:GetHeight() or 0) + (wndName:IsShown() and wndName:GetHeight() or 0)
-				end
-				
-				local tOffsets = {wndRune:GetAnchorOffsets()}
-				wndRune:SetAnchorOffsets(tOffsets[1], tOffsets[2], nRuneWidth, tOffsets[2] + height)
+			local nNameTop = (wndIcon:IsShown() and tIconOffsets[4] or 0)
+			wndName:SetText(tSigil.strName)
+			wndName:SetAnchorOffsets(-(nRuneWidth / 2), nNameTop, (nRuneWidth / 2), nNameTop + 12)
+			wndName:Show(self.settings.bRuneNames)
+			
+			if height == 0 then
+				height	= (wndIcon:IsShown() and wndIcon:GetHeight() or 0) + (wndName:IsShown() and wndName:GetHeight() or 0)
 			end
 			
-			wndRuneContainer:ArrangeChildrenHorz()
-			
-			local tOffsets = {wndRuneContainer:GetAnchorOffsets()}
-			wndRuneContainer:SetAnchorOffsets(tOffsets[3] - (nRuneWidth * #wndRuneContainer:GetChildren()), tOffsets[4] - height, tOffsets[3], tOffsets[4])
+			local tOffsets = {wndRune:GetAnchorOffsets()}
+			wndRune:SetAnchorOffsets(tOffsets[1], tOffsets[2], nRuneWidth, tOffsets[2] + height)
 		end
 		
-		local itemQualityColor = ktEvalColors[tItem:GetItemQuality()]
-		local tItemIconPixie = {
-			bLine = false,
-			bRestart = true,
-			cr = itemQualityColor,
-			strSprite = "BK3:UI_BK3_ItemQualityWhite",
-			loc = {
-				fPoints = {0, 0, 1, 1},
-				nOffsets = {0,0,0,0}
-			}
-		}	
-		wndItemContainer:FindChild("ListIcon"):AddPixie(tItemIconPixie)
+		wndRuneContainer:ArrangeChildrenHorz()
 		
-		wndItemContainer:FindChild("ListName"):SetTextColor(itemQualityColor)
-		
-		local tActivateSpell = tItem:GetActivateSpell()
-		local tTradeskillRequirements = tActivateSpell and tActivateSpell:GetTradeskillRequirements()
-		if tTradeskillRequirements and tTradeskillRequirements.bIsKnown then
-			wndItemContainer:FindChild("ListName"):SetText(wndItemContainer:FindChild("ListName"):GetText() .. " (Known)")
-			wndItemContainer:FindChild("ListName"):SetTextColor("UI_WindowTextRed")
-		end
+		local tOffsets = {wndRuneContainer:GetAnchorOffsets()}
+		wndRuneContainer:SetAnchorOffsets(tOffsets[3] - (nRuneWidth * #wndRuneContainer:GetChildren()), tOffsets[4] - height, tOffsets[3], tOffsets[4])
 	end
+	
+	local itemQualityColor = ktEvalColors[tItem:GetItemQuality()]
+	local tItemIconPixie = {
+		bLine = false,
+		bRestart = true,
+		cr = itemQualityColor,
+		strSprite = "BK3:UI_BK3_ItemQualityWhite",
+		loc = {
+			fPoints = {0, 0, 1, 1},
+			nOffsets = {0,0,0,0}
+		}
+	}	
+	wndItemContainer:FindChild("ListIcon"):AddPixie(tItemIconPixie)
+	
+	wndItemContainer:FindChild("ListName"):SetTextColor(itemQualityColor)
+	
+	local tActivateSpell = tItem:GetActivateSpell()
+	local tTradeskillRequirements = tActivateSpell and tActivateSpell:GetTradeskillRequirements()
+	if tTradeskillRequirements and tTradeskillRequirements.bIsKnown then
+		wndItemContainer:FindChild("ListName"):SetText(wndItemContainer:FindChild("ListName"):GetText() .. " (Known)")
+		wndItemContainer:FindChild("ListName"):SetTextColor("UI_WindowTextRed")
+	end
+end
+
+function AuctionHouseRunes:Hook_InitializeSell(luaCaller)
+	local wndItemSellList = luaCaller.wndMain:FindChild("SellLeftSideItemList")
+	if wndItemSellList ~= nil and #wndItemSellList:GetChildren() > 0 then
+		for idx, wndSellItem in ipairs(wndItemSellList:GetChildren()) do
+			if wndSellItem:FindChild("ListItemTitle"):GetTextColor() ~= "UI_BtnTextGrayListNormal" then
+				local tItem = wndSellItem:GetData()
+				local itemQualityColor = ktEvalColors[tItem:GetItemQuality()]
+				wndSellItem:FindChild("ListItemTitle"):SetTextColor(itemQualityColor)
+				
+				local tItemIconPixie = {
+					bLine = false,
+					bRestart = true,
+					cr = itemQualityColor,
+					strSprite = "BK3:UI_BK3_ItemQualityWhite",
+					loc = {
+						fPoints = {0, 0, 1, 1},
+						nOffsets = {0,0,0,0}
+					}
+				}
+				wndSellItem:FindChild("ListItemIcon"):AddPixie(tItemIconPixie)
+				
+				-- Maybe add runes
+				local tSigils = tItem:GetSigils()
+				if tSigils ~= nil and tSigils.bIsDefined then
+					local tOffsets = {wndSellItem:GetAnchorOffsets()}
+					wndSellItem:SetAnchorOffsets(tOffsets[1], tOffsets[2], tOffsets[3], tOffsets[4] + 18)
+					
+					local tTitleOffsets = {wndSellItem:FindChild("ListItemTitle"):GetAnchorOffsets()}
+					local nTitleHeight = wndSellItem:FindChild("ListItemTitle"):GetHeight()
+					wndSellItem:FindChild("ListItemTitle"):SetAnchorPoints(0, 0, 1, 0)
+					wndSellItem:FindChild("ListItemTitle"):SetAnchorOffsets(tTitleOffsets[1], tTitleOffsets[2], tTitleOffsets[3], tTitleOffsets[2] + nTitleHeight)
+					
+					local tIconOffsets = {wndSellItem:FindChild("ListItemIcon"):GetAnchorOffsets()}
+					wndSellItem:FindChild("ListItemIcon"):SetAnchorPoints(0, 0, 0, 0)
+					wndSellItem:FindChild("ListItemIcon"):SetAnchorOffsets(tIconOffsets[1], tIconOffsets[2], tIconOffsets[3], tIconOffsets[2] + (tIconOffsets[3] - tIconOffsets[1]))
+					
+					local wndRuneContainer = Apollo.LoadForm(self.xmlDoc, "RuneContainer", wndSellItem, self)
+					local nRuneWidth = 16
+					local width, height = 0, 0
+					
+					for i, tSigil in ipairs(tSigils.arSigils) do
+						local wndRune = Apollo.LoadForm(self.xmlDoc, "Rune", wndRuneContainer, self)
+						local wndIcon = wndRune:FindChild("Icon")
+						wndRune:FindChild("Name"):Show(false) -- Not enough room for names
+						wndIcon:SetSprite("Crafting_RunecraftingSprites:sprRunecrafting_" .. ktRuneNames[tSigil.eType])
+						wndIcon:SetAnchorOffsets(-10, 0, 10, 20)
+						wndIcon:Show(true)
+						local tIconOffsets = {wndIcon:GetAnchorOffsets()}
+						
+						if height == 0 then
+							height	= (wndIcon:IsShown() and wndIcon:GetHeight() or 0)
+						end
+						
+						local tOffsets = {wndRune:GetAnchorOffsets()}
+						wndRune:SetAnchorOffsets(tOffsets[1], tOffsets[2], nRuneWidth, tOffsets[2] + height)
+					end
+					
+					wndRuneContainer:ArrangeChildrenHorz()
+					
+					local tOffsets = {wndRuneContainer:GetAnchorOffsets()}
+					wndRuneContainer:SetAnchorPoints(0, 1, 0, 1)
+					wndRuneContainer:SetAnchorOffsets(5, -2 - height, 5 + (nRuneWidth * #wndRuneContainer:GetChildren()), -2)
+					--wndRuneContainer:SetAnchorOffsets(tOffsets[3] - (nRuneWidth * #wndRuneContainer:GetChildren()), tOffsets[4] - height, tOffsets[3], tOffsets[4])
+				end
+			end
+		end
+		wndItemSellList:ArrangeChildrenVert(0, function (a,b) return a:GetName() < b:GetName() end)
+	end
+end
+
+function AuctionHouseRunes:Hook_OnSellListItemCheck(luaCaller, wndHandler, wndControl)
+	local itemQualityColor = ktEvalColors[wndHandler:GetData():GetItemQuality()]
+	wndHandler:FindChild("ListItemTitle"):SetTextColor(itemQualityColor)
+	
+	local tItemIconPixie = {
+		bLine = false,
+		bRestart = true,
+		cr = itemQualityColor,
+		strSprite = "BK3:UI_BK3_ItemQualityWhite",
+		loc = {
+			fPoints = {0, 0, 1, 1},
+			nOffsets = {0,0,0,0}
+		}
+	}	
+	
+	local wndRightSide = luaCaller.wndMain:FindChild("SellRightSide")
+	wndRightSide:FindChild("BigIcon"):AddPixie(tItemIconPixie)
+	
+	wndRightSide:FindChild("BigItemName"):SetTextColor(itemQualityColor)
+	
+	-- Add runes
+end
+
+function AuctionHouseRunes:Hook_OnSellListItemUncheck(luaCaller, wndHandler, wndControl)
+	local itemQualityColor = ktEvalColors[wndHandler:GetData():GetItemQuality()]
+	wndHandler:FindChild("ListItemTitle"):SetTextColor(itemQualityColor)
 end
 
 -----------------------------------------------------------------------------------------------
