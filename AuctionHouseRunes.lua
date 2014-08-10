@@ -17,7 +17,7 @@ local Logger
 -----------------------------------------------------------------------------------------------
 -- Constants
 -----------------------------------------------------------------------------------------------
-local ktVersion = {nMajor = 1, nMinor = 2, nPatch = 0}
+local ktVersion = {nMajor = 1, nMinor = 2, nPatch = 1}
 
 local ktDefaultSettings = {
 	tVersion = {
@@ -339,8 +339,14 @@ function AuctionHouseRunes:Hook_OnSellListItemCheck(luaCaller, wndHandler, wndCo
 end
 
 function AuctionHouseRunes:Hook_OnSellListItemUncheck(luaCaller, wndHandler, wndControl)
-	local itemQualityColor = ktEvalColors[wndHandler:GetData():GetItemQuality()]
-	wndHandler:FindChild("ListItemTitle"):SetTextColor(itemQualityColor)
+	local tItem = wndHandler:GetData()
+	if tItem ~= nil then
+		local itemQualityColor = ktEvalColors[tItem:GetItemQuality()]
+		local wndItemTitle = wndHandler:FindChild("ListItemTitle")
+		if wndItemTitle ~= nil then
+			wndItemTitle:SetTextColor(itemQualityColor)
+		end
+	end
 end
 
 -----------------------------------------------------------------------------------------------
