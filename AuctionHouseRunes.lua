@@ -184,7 +184,7 @@ end
 
 function AuctionHouseRunes:Hook_BuildListItem(luaCaller, aucCurr, wndParent, bBuyTab)
 	local tItem = aucCurr:GetItem()
-	local tSigils = tItem:GetSigils()
+	local tSigils = tItem:GetRuneSlots()
 	
 	local wndItemContainers = wndParent:GetChildren()
 	local wndItemContainer = wndItemContainers[#wndItemContainers]
@@ -194,7 +194,7 @@ function AuctionHouseRunes:Hook_BuildListItem(luaCaller, aucCurr, wndParent, bBu
 		local nRuneWidth = (self.settings.nIconSize >= 36) and self.settings.nIconSize or ktMinWidth
 		local width, height = 0, 0
 		
-		for i, tSigil in ipairs(tSigils.arSigils) do
+		for i, tSigil in ipairs(tSigils.arRuneSlots) do
 			local wndRune = Apollo.LoadForm(self.xmlDoc, "Rune", wndRuneContainer, self)
 			local wndIcon = wndRune:FindChild("Icon")
 			local wndName = wndRune:FindChild("Name")
@@ -267,7 +267,7 @@ function AuctionHouseRunes:Hook_InitializeSell(luaCaller)
 				wndSellItem:FindChild("ListItemIcon"):AddPixie(tItemIconPixie)
 				
 				-- Maybe add runes
-				local tSigils = tItem:GetSigils()
+				local tSigils = tItem:GetRuneSlots()
 				if tSigils ~= nil and tSigils.bIsDefined then
 					local tOffsets = {wndSellItem:GetAnchorOffsets()}
 					wndSellItem:SetAnchorOffsets(tOffsets[1], tOffsets[2], tOffsets[3], tOffsets[4] + 18)
@@ -285,7 +285,7 @@ function AuctionHouseRunes:Hook_InitializeSell(luaCaller)
 					local nRuneWidth = 16
 					local width, height = 0, 0
 					
-					for i, tSigil in ipairs(tSigils.arSigils) do
+					for i, tSigil in ipairs(tSigils.arRuneSlots) do
 						local wndRune = Apollo.LoadForm(self.xmlDoc, "Rune", wndRuneContainer, self)
 						local wndIcon = wndRune:FindChild("Icon")
 						wndRune:FindChild("Name"):Show(false) -- Not enough room for names
